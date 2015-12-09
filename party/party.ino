@@ -1,7 +1,7 @@
 #include<FastLED.h>
 #include <LEDMatrix.h>
-#include <LEDText.h>
-#include <FontRobotron.h>
+//#include <LEDText.h>
+//#include <FontRobotron.h>
 #include <LEDSprites.h>
 
 #define LED_PIN     7
@@ -21,7 +21,7 @@ int right[7];
 int minValue = 1023;
 int maxValue = 0;
 
-float beatMultiplier = 1.0;
+int beat = 0;
 
 #define MATRIX_WIDTH 24
 #define MATRIX_HEIGHT 8
@@ -55,44 +55,36 @@ static uint16_t x;
 static uint16_t y;
 static uint16_t z;
 
+/*
 cLEDText ScrollingMsg;
-const unsigned char msg[] = { "THIS IS A MESSAGE" };
+const unsigned char msg[] = { "PICKLE PARTY!" };
+*/
+const uint8_t pickleData[] = {
+  B8_5BIT(00000000),B8_5BIT(00000000),B8_5BIT(00000000),
+  B8_5BIT(00234540),B8_5BIT(00000004),B8_5BIT(54454300),
+  B8_5BIT(06778849),B8_5BIT(000000AB),B8_5BIT(CBDEEFG0),
+  B8_5BIT(067H4II8),B8_5BIT(J53DK5IL),B8_5BIT(MNDLOOP0),
+  B8_5BIT(066HJM5Q),B8_5BIT(3DMMRINB),B8_5BIT(NDNRNNA0),
+  B8_5BIT(00STUV2J),B8_5BIT(5J55Q55K),B8_5BIT(C5QERF00),
+  B8_5BIT(0000H8JD),B8_5BIT(2QJQQM4L),B8_5BIT(4QI00000),
+  B8_5BIT(00000000),B8_5BIT(00000000),B8_5BIT(00000000) };
+const uint8_t pickleMask[] = {
+  B8_1BIT(00000000),B8_1BIT(00000000),B8_1BIT(00000000),
+  B8_1BIT(00111110),B8_1BIT(00000001),B8_1BIT(11111100),
+  B8_1BIT(01111111),B8_1BIT(00000011),B8_1BIT(11111110),
+  B8_1BIT(01111111),B8_1BIT(11111111),B8_1BIT(11111110),
+  B8_1BIT(01111111),B8_1BIT(11111111),B8_1BIT(11111110),
+  B8_1BIT(00111111),B8_1BIT(11111111),B8_1BIT(11111100),
+  B8_1BIT(00001111),B8_1BIT(11111111),B8_1BIT(11100000),
+  B8_1BIT(00000000),B8_1BIT(00000000),B8_1BIT(00000000) };
+const struct CRGB pickleCols[31] = { CRGB(0,0,0), CRGB(71,95,34), CRGB(116,133,41), CRGB(87,115,49), CRGB(65,99,18), CRGB(35,48,12), CRGB(24,49,3), CRGB(45,72,13), CRGB(175,187,112), CRGB(151,177,48), CRGB(104,139,60), CRGB(148,167,92), CRGB(117,150,52), CRGB(104,149,24), CRGB(144,181,19), CRGB(142,196,77),
+   CRGB(47,65,19), CRGB(86,117,37), CRGB(57,85,21), CRGB(80,118,10), CRGB(109,140,21), CRGB(98,131,41), CRGB(94,131,22), CRGB(82,131,4), CRGB(157,208,130), CRGB(74,107,28), CRGB(65,104,5), CRGB(117,128,75), CRGB(73,90,39), CRGB(94,107,36), CRGB(195,181,85) };
+cSprite Pickle(24, 8, pickleData, 1, _5BIT, pickleCols, pickleMask);
 
-#define GHOST_WIDTH 14
-#define GHOST_HEIGHT 13
-const uint8_t GhostData[] = {
-  B8_2BIT(00000111),B8_2BIT(10000000),
-  B8_2BIT(00011111),B8_2BIT(11100000),
-  B8_2BIT(00111111),B8_2BIT(11110000),
-  B8_2BIT(01112211),B8_2BIT(11221000),
-  B8_2BIT(01122221),B8_2BIT(12222000),
-  B8_2BIT(01122331),B8_2BIT(12233000),
-  B8_2BIT(11122331),B8_2BIT(12233100),
-  B8_2BIT(11112211),B8_2BIT(11221100),
-  B8_2BIT(11111111),B8_2BIT(11111100),
-  B8_2BIT(11111111),B8_2BIT(11111100),
-  B8_2BIT(11111111),B8_2BIT(11111100),
-  B8_2BIT(11011100),B8_2BIT(11101100),
-  B8_2BIT(10001100),B8_2BIT(11000100)
-};
-const uint8_t GhostMask[] = {
-  B8_1BIT(00000111),B8_1BIT(10000000),
-  B8_1BIT(00011111),B8_1BIT(11100000),
-  B8_1BIT(00111111),B8_1BIT(11110000),
-  B8_1BIT(01111111),B8_1BIT(11111000),
-  B8_1BIT(01111111),B8_1BIT(11111000),
-  B8_1BIT(01111111),B8_1BIT(11111000),
-  B8_1BIT(11111111),B8_1BIT(11111100),
-  B8_1BIT(11111111),B8_1BIT(11111100),
-  B8_1BIT(11111111),B8_1BIT(11111100),
-  B8_1BIT(11111111),B8_1BIT(11111100),
-  B8_1BIT(11111111),B8_1BIT(11111100),
-  B8_1BIT(11011100),B8_1BIT(11101100),
-  B8_1BIT(10001100),B8_1BIT(11000100)
-};
-struct CRGB GhostColTable[3] = { CRGB::Orange, CRGB::White, CRGB::Blue };
 cLEDSprites Sprites(&leds);
-cSprite Ghost(GHOST_WIDTH, GHOST_HEIGHT, GhostData, 1, _2BIT, GhostColTable, GhostMask);
+
+CRGBPalette16 whitePalette;
+     
 
 void setup() {
   Serial.begin(38400);
@@ -108,18 +100,23 @@ void setup() {
   digitalWrite(RESET, LOW);
   digitalWrite(STROBE, HIGH);
 
-  /*
+  fill_solid( whitePalette, 16, CRGB::Black);
+  whitePalette[0] = CRGB::White;
+  whitePalette[7] = CRGB::White;
+  whitePalette[8] = CRGB(128,128,128);
+
+
+/*
   ScrollingMsg.SetFont(RobotronFontData);
   ScrollingMsg.Init(&leds, MATRIX_WIDTH, MATRIX_HEIGHT, 0, 0);
   ScrollingMsg.SetText((unsigned char*)msg, sizeof(msg)-1);
   ScrollingMsg.SetTextColrOptions(COLR_RGB | COLR_SINGLE, 0xff, 0x00, 0xff);
   ScrollingMsg.SetScrollDirection(SCROLL_LEFT);
   ScrollingMsg.SetTextDirection(CHAR_UP);
-  ScrollingMsg.SetFrameRate(40);
+  ScrollingMsg.SetFrameRate(5);
   */
-  
-  Ghost.SetPositionFrameMotionOptions(-3/*X*/, -3/*Y*/, 0/*Frame*/, 0/*FrameRate*/, 1/*XChange*/, 10/*XRate*/, 0/*YChange*/, 5/*YRate*/, SPRITE_X_KEEPIN | SPRITE_DETECT_EDGE);
-  Sprites.AddSprite(&Ghost);
+  Pickle.SetPositionFrameMotionOptions(0/*X*/, 0/*Y*/, 0/*Frame*/, 0/*FrameRate*/, 0/*XChange*/, 0/*XRate*/, 0/*YChange*/, 0/*YRate*/, SPRITE_X_KEEPIN | SPRITE_DETECT_EDGE);
+  Sprites.AddSprite(&Pickle);
 }
 
 void readMSGEQ7() {
@@ -153,9 +150,34 @@ void readMSGEQ7() {
   
   //int leftValue = curveSize*(((float)(leftVal-minValue)/(float)(maxValue-minValue)));
   //int rightValue = 5*(((float)(rightVal-minValue)/(float)(maxValue-minValue)));
-  beatMultiplier = 1.0 - (((float)(leftVal-minValue)/(float)(maxValue-minValue)));
-  animation_speed = base_animation_speed*beatMultiplier;
-  //Serial.println(animation_speed);
+  beat = 10*(((float)(leftVal-minValue)/(float)(maxValue-minValue)));
+  //animation_speed = base_animation_speed*beatMultiplier;
+
+  for(int i=0; i<16; i++) {
+    if(whitePalette[i].r > 20)
+      whitePalette[i] = CRGB(whitePalette[i].r-20, whitePalette[i].g-20, whitePalette[i].b-20);
+  }
+  whitePalette[0] = CRGB::White;
+  whitePalette[7] = CRGB::White;
+  //whitePalette[8] = CRGB::Grey;
+
+  if(beat>2) {
+    whitePalette[1] = CRGB::White;
+    whitePalette[2] = CRGB::White;
+  }
+  if(beat>4) {
+    whitePalette[3] = CRGB::White;
+    whitePalette[4] = CRGB::White;
+  }
+  if(beat>6) {
+    whitePalette[11] = CRGB::White;
+    whitePalette[12] = CRGB::White;
+  }
+  if(beat>8)   {
+    whitePalette[13] = CRGB::White;
+    whitePalette[14] = CRGB::White;
+  }
+  Serial.println(beat);
 }
 
 
@@ -262,26 +284,27 @@ CRGB tailC[5];
 
 void loop() {
   readMSGEQ7();
+
+  // Changing the first value changes speed 1 = fast, second value is 'thickness' of wave
   
-  waves(10, 20, LavaColors_p);
+  waves(1, 20, whitePalette);
   fillnoise8();
   mapNoiseToLEDsUsingPalette();
-  
+//  FastLED.show();
   //FastLED.clear();
   
-  /*
   Sprites.UpdateSprites();
   Sprites.RenderSprites();
-  */
+  FastLED.show();
 
-/*
-  if (ScrollingMsg.UpdateText() == -1) {
+/*  
+    if (ScrollingMsg.UpdateText() == -1) {
     ScrollingMsg.SetText((unsigned char*)msg, sizeof(msg)-1);
     ScrollingMsg.SetTextColrOptions(COLR_RGB | COLR_SINGLE, 0xff, 0x00, 0xff);
   } else
     FastLED.show();
-  delay(40);
-*/
+    */
+  //delay(40);
 
 /*
   // oval
@@ -308,6 +331,6 @@ void loop() {
   Serial.print(" y = ");
   Serial.println(y);
   */
-  FastLED.show();
+  //FastLED.show();
 }
 
